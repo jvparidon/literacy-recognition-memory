@@ -1,0 +1,7 @@
+pymc3==3.6
+bambi
+matplotlib
+seaborn
+numpy
+scipy
+pandas
