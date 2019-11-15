@@ -333,8 +333,8 @@ def rename_vars(trace, varnames_dict):
     return trace
 
 
-def plot_marginal(effects, rows=None, cols=None, hues=None, interaction=None, main=None, xlim=(-1, 1), alpha=.15, **kwargs):
-    """Plot marginal effects.
+def plot_effects(effects, rows=None, cols=None, hues=None, interaction=None, main=None, xlim=(-1, 1), alpha=.15, **kwargs):
+    """Plot effects.
 
     :param effects: marginal effects object (PyMC3 traces converted to marginal effects using the marginal_effects() function)
     :param rows: condition levels to assign to rows
@@ -413,7 +413,7 @@ def plot_marginal(effects, rows=None, cols=None, hues=None, interaction=None, ma
         for j in range(g.axes.shape[1]):
             g.axes[i][j].axhline(0, color='black', linestyle=':')
     xlabel = interaction if interaction is not None else main
-    g.set_axis_labels(xlabel, 'marginal effect')
+    g.set_axis_labels(xlabel, 'effect')
     g.add_legend(title='')
     return g
 
