@@ -271,15 +271,15 @@ def scale_trace(trace, factor):
     return trace
 
 
-def marginal_effects(trace, simple_effects=None, interactions=None):
-    """Computes marginal effects traces from a PyMC3 trace object.
+def conditional_effects(trace, simple_effects=None, interactions=None):
+    """Computes conditional effects traces from a PyMC3 trace object.
 
     Does not alter the original trace object, but makes a deep copy instead.
 
     :param trace: PyMC3 trace object
     :param simple_effects: list of simple effects (dummy coded binary predictors)
     :param interaction: predictor to compute interactions with simple effects for (continuous or contrast-coded binary predictor)
-    :returns: PyMC3 trace object containing marginal effects traces
+    :returns: PyMC3 trace object containing conditional effects traces
     """
     trace = copy.deepcopy(trace)
     trace = remove_random(trace)
@@ -293,25 +293,25 @@ def marginal_effects(trace, simple_effects=None, interactions=None):
     for effectname in effects.keys():
         for varname in trace.varnames:
 
-            # compute marginal effects from simple effects
+            # compute conditional effects from simple effects
             if set(effectname.split(':')) <= set(simple_effects):
 
                 # add intercept for reference condition to all simple effects
                 if varname == 'Intercept':
                     effects[effectname] += trace[varname]
 
-                # add simple effects to get marginal effects (per condition intercepts)
+                # add simple effects to get conditional effects (per condition intercepts)
                 elif set(varname.split(':')) <= set(effectname.split(':')):
                         effects[effectname] += trace[varname]
 
-            # add interactions to get marginal effects (per condition slopes)
+            # add interactions to get conditional effects (per condition slopes)
             else:
                 for interaction in interactions:
                     if interaction in set(varname.split(':')):
                         if set(varname.split(':')) <= set(effectname.split(':')):
                                 effects[effectname] += trace[varname]
 
-    # overwrite simple/main effect traces with marginal effect traces
+    # overwrite simple/main effect traces with conditional effect traces
     trace.add_values(effects, overwrite=True)
 
     return trace
@@ -427,14 +427,14 @@ def compare(models, labels=None, insample_dev=False, **kwargs):
     :param kwargs: keyword args for PyMC3 model comparison function
     :returns: tuple of matplotlib figure object of model comparison and pandas DataFrame of model statistics
     """
-    if labels is not None:
-        for i in range(len(models)):
-            models[i].backend.model.name = labels[i]
+    traces = dict()
+    if type(models) is dict:
+        for label, model in models.items():
+            traces[label] = model.backend.trace
     else:
         for model in models:
-            model.backend.model.name = ' + '.join(model.terms.keys())
-    models = {model.backend.model: model.backend.trace for model in models}
-    comparison = pm.compare(models, **kwargs)
+            traces[' + '.join(model.terms.keys())] = model.backend.trace
+    comparison = pm.compare(traces, **kwargs)
     g = pm.compareplot(comparison, insample_dev=insample_dev)
     return g, comparison
 
