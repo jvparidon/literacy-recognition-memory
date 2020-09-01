@@ -1,5 +1,5 @@
 # On the contents of this repository
-This repository contains data and code accompanying the _Psychological Science_ article "Does neuronal recycling result in destructive competition? The influence of learning to read on the recognition of faces."
+This repository contains data and code that can be used to reproduce the statistical analysis reported in the _Psychological Science_ article "Does neuronal recycling result in destructive competition? The influence of learning to read on the recognition of faces."
 
 We have split the statistical analysis into four Jupyter notebooks; fully rendered HTML versions of these notebooks are available through these links:
 1. [Digit span models](http://htmlpreview.github.io/?https://github.com/jvparidon/literacy-recognition-memory/blob/master/html_notebooks/digit_span_models.html)
