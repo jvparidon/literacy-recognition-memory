@@ -342,9 +342,9 @@ def plot_effects(effects, rows=None, cols=None, hues=None, interaction=None, mai
     :param hues: condition levels to assign to hues
     :param interaction: the interaction of interest
     :param xlim: the limits of the x axes, -1 to +1 by default
-    :param alpha: opacity of shaded HPD area around the mode line
+    :param alpha: opacity of shaded HPD area around the mean line
     """
-    df = summary(effects)
+    df = pm.summary(effects, credible_interval=.95)
     df['effect'] = df.index
     hue = None
     col = None
@@ -375,16 +375,16 @@ def plot_effects(effects, rows=None, cols=None, hues=None, interaction=None, mai
         df['is_slope'] = df['effect'].apply(lambda x: 1 if x == main else 0)
 
     intercepts = df.loc[df['is_slope'] == 0]
-    slopes = df.loc[df['is_slope'] == 1][['marginal', 'mode', 'hpd_2.5', 'hpd_97.5']]
+    slopes = df.loc[df['is_slope'] == 1][['marginal', 'mean', 'hpd_2.5%', 'hpd_97.5%']]
     slopes = slopes.add_prefix('slope_')
 
     if main is not None:
         intercepts['marginal'] = np.nan
     df = intercepts.merge(slopes, left_on='marginal', right_on='slope_marginal')
 
-    def plot_mode(intercept_mode, slope_mode, xlim=(-1, 1), **kwargs):
+    def plot_mean(intercept_mean, slope_mean, xlim=(-1, 1), **kwargs):
         x = np.linspace(*xlim, 200)
-        y = slope_mode.values * x + intercept_mode.values
+        y = slope_mean.values * x + intercept_mean.values
         return plt.plot(x, y, **kwargs)
 
     def plot_ci(intercept_lower, intercept_upper, slope_lower, slope_upper, xlim=(-1, 1), alpha=alpha, **kwargs):
@@ -404,14 +404,14 @@ def plot_effects(effects, rows=None, cols=None, hues=None, interaction=None, mai
                       xlim=xlim,
                       **kwargs)
 
-    g.map(plot_ci, 'hpd_2.5', 'hpd_97.5', 'slope_hpd_2.5', 'slope_hpd_97.5', xlim=xlim)
-    g.map(plot_mode, 'mode', 'slope_mode', xlim=xlim)
+    g.map(plot_ci, 'hpd_2.5%', 'hpd_97.5%', 'slope_hpd_2.5%', 'slope_hpd_97.5%', xlim=xlim)
+    g.map(plot_mean, 'mean', 'slope_mean', xlim=xlim)
     if cols is not None:
         for i in range(g.axes.shape[1]):
             g.axes[0][i].set(title=cols[i])
     for i in range(g.axes.shape[0]):
         for j in range(g.axes.shape[1]):
-            g.axes[i][j].axhline(0, color='black', linestyle=':')
+            g.axes[i][j].axhline(0, color='.8')
     xlabel = interaction if interaction is not None else main
     g.set_axis_labels(xlabel, 'effect')
     g.add_legend(title='')
